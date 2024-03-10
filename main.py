@@ -5,7 +5,7 @@ from routers.stars import star as star_router
 from routers.wins import win as win_router
 from routers.table import table as table_router
 
-model.Base.metadata.create_all(bind=engine)
+#model.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Medical Pulse")
 
