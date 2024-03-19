@@ -1,102 +1,114 @@
 from datetime import date
-from typing import Optional, List
 
-from sqlalchemy  import MetaData, Integer, ForeignKey,Column
-from sqlalchemy.orm import Mapped , mapped_column, relationship
+from sqlalchemy import Column, Integer, ForeignKey, MetaData
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+from typing import TYPE_CHECKING, Optional, List
 
 from .database import Base
 
 metadata = MetaData()
-
+'''
+if TYPE_CHECKING:
+    from .diagnostic import Diagnostic  # Пример условного импорта
+    from .study import Study
+    from .insurance import Insurance
+    from .lpu import LPU
+    from .doctor import Doctor
+'''
 class Pacient(Base):
     __tablename__ = "pacients"
     id: Mapped[int] = mapped_column(primary_key=True)
-    card: Mapped[str]
-    polis: Mapped[str]
-    polOrg: Mapped[List["Insur"]] = relationship(
-        back_populates="name" , cascade = "all, delete-orphan"
-    )
-    snils: Mapped[Optional[str]]
-    fName: Mapped[str]
-    sName: Mapped[str]
-    tName: Mapped[Optional[str]]
-    gender: Mapped[bool]
-    birthDate: Mapped[date]
-    region: Mapped[str]
-    city: Mapped[str]
-    street: Mapped[str]
-    house: Mapped[int]
-    aps: Mapped[Optional[int]]
-    postIndex: Mapped[Optional[int]]
-    #studyGrade = Column(Integer, ForeignKey("studies.StudyId"), nullable=False)
-    studyGrade: Mapped[List["Study"]] = relationship(
-        back_populates="grade" , cascade = "all, delete-orphan"
-    )
-    jobPlace: Mapped[Optional[str]]
-    jobProf: Mapped[Optional[str]]
-    disability: Mapped[Optional[bool]]
-    disabilityGroup: Mapped[Optional[int]]
+    card: Mapped[str] = mapped_column()
+    polis: Mapped[str] = mapped_column()
+    snils: Mapped[Optional[str]] = mapped_column(nullable=True)
+    fName: Mapped[str] = mapped_column()
+    sName: Mapped[str] = mapped_column()
+    tName: Mapped[Optional[str]] = mapped_column(nullable=True)
+    gender: Mapped[bool] = mapped_column()
+    birthDate: Mapped[date] = mapped_column()
+    region: Mapped[str] = mapped_column()
+    city: Mapped[str] = mapped_column()
+    street: Mapped[str] = mapped_column()
+    house: Mapped[int] = mapped_column()
+    aps: Mapped[Optional[int]] = mapped_column(nullable=True)
+    postIndex: Mapped[Optional[int]] = mapped_column(nullable=True)
+    jobPlace: Mapped[Optional[str]] = mapped_column(nullable=True)
+    jobProf: Mapped[Optional[str]] = mapped_column(nullable=True)
+    disability: Mapped[Optional[bool]] = mapped_column(nullable=True)
+    disabilityGroup: Mapped[Optional[int]] = mapped_column(nullable=True)
+    polOrg: Mapped[List["Insurance"]] = relationship("Insurance", back_populates="pacient", cascade="all, delete-orphan")
+    studyGrade: Mapped[List["Study"]] = relationship("Study", back_populates="pacient", cascade="all, delete-orphan")
+    def __str__(self):
+        return f"Pacient {self.card}"
 
 class Study(Base):
     __tablename__ = "studies"
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    pacId: Mapped[int] = mapped_column(ForeignKey("pacients.id"))
-    grade: Mapped["Pacient"] = relationship(back_populates = "studyGrade")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    pacId: Mapped[int] = mapped_column(ForeignKey("pacients.id", ondelete="CASCADE"))
+    grade: Mapped[str] = mapped_column()
+    pacient: Mapped["Pacient"] = relationship("Pacient", back_populates="studyGrade")
+    def __str__(self):
+        return f"Study {self.grade}"
 
-class Insur(Base):
+class Insurance(Base):
     __tablename__ = "insurances"
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    pacId: Mapped[int] = mapped_column (ForeignKey ("pacients.id"))
-    name: Mapped["Pacient"] = relationship(back_populates = "polOrg")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column()
+    pacId: Mapped[int] = mapped_column(ForeignKey("pacients.id", ondelete="CASCADE"))
+    pacient: Mapped["Pacient"] = relationship("Pacient", back_populates="polOrg")
+    def __str__(self):
+        return f"Insur {self.name}"
 
 class LPU(Base):
     __tablename__ = "lpus"
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    ogrn: Mapped[str]
-    lpuName: Mapped[str]
-    sName: Mapped[Optional[str]]
-    adress: Mapped[str]
-    #mainDoc: Mapped[int] = mapped_column(ForeignKey("doctors.id"))
-    #secondDoc: Mapped[int] = mapped_column(ForeignKey("doctors.id"))
-    phone: Mapped[str]
-    email: Mapped[str]
-    postIndex: Mapped[Optional[int]]
-
+    id: Mapped[int] = mapped_column(primary_key=True)
+    ogrn: Mapped[str] = mapped_column()
+    lpuName: Mapped[str] = mapped_column()
+    sName: Mapped[Optional[str]] = mapped_column(nullable=True)
+    address: Mapped[str] = mapped_column()
+    phone: Mapped[str] = mapped_column()
+    email: Mapped[str] = mapped_column()
+    postIndex: Mapped[Optional[int]] = mapped_column(nullable=True)
+    doctors: Mapped[List["Doctor"]] = relationship("Doctor", back_populates="lpu", cascade="all, delete-orphan")
+    def __str__(self):
+        return f"LPU {self.sName}"
 
 class Doctor(Base):
     __tablename__ = "doctors"
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    id_LPU: Mapped[int] = mapped_column(ForeignKey("lpus.id"))
-    fName: Mapped[str]
-    sName: Mapped[str]
-    tName: Mapped[Optional[str]]
-    spec: Mapped[str] # Возможно добавить таблицу Specs...
-    regDate: Mapped[date]
+    id: Mapped[int] = mapped_column(primary_key=True)
+    id_LPU: Mapped[int] = mapped_column(ForeignKey("lpus.id", ondelete="CASCADE"))
+    fName: Mapped[str] = mapped_column()
+    sName: Mapped[str] = mapped_column()
+    tName: Mapped[Optional[str]] = mapped_column(nullable=True)
+    spec: Mapped[str] = mapped_column()
+    regDate: Mapped[date] = mapped_column()
+    lpu: Mapped["LPU"] = relationship("LPU", back_populates="doctors")
+    diagnostics: Mapped[List["Diagnostic"]] = relationship("Diagnostic", back_populates="doctor", cascade="all, delete-orphan")
+    def __str__(self):
+        return f"Doc {self.sName}"
 
 class Diagnostic(Base):
     __tablename__ = "diagnostics"
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    pacId: Mapped[int] = mapped_column(ForeignKey("pacients.id"))
-    docId: Mapped[int] = mapped_column(ForeignKey("doctors.id"))
-   # examid: Mapped[List["Examination"]] = relationship(
-    #    back_populates = "id", cascade = "all, delete-orphan"
-    #)
-
-    ExamDate: Mapped[date]
-    Diagnosis: Mapped[str]
-    Recommendations: Mapped[Optional[str]] 
-
+    id: Mapped[int] = mapped_column(primary_key=True)
+    pacId: Mapped[int] = mapped_column(ForeignKey("pacients.id", ondelete="CASCADE"))
+    docId: Mapped[int] = mapped_column(ForeignKey("doctors.id", ondelete="CASCADE"))
+    ExamDate: Mapped[date] = mapped_column()
+    Diagnosis: Mapped[str] = mapped_column()
+    Recommendations: Mapped[Optional[str]] = mapped_column(nullable=True)
+    doctor: Mapped["Doctor"] = relationship("Doctor", back_populates="diagnostics")
+   # examinations: Mapped[List[str]] = relationship("Examination", back_populates="diagnostic", cascade="all, delete-orphan")  # Предположение
+    def __str__(self):
+        return f"Diag {self.ExamDate}"
+'''
 class Examination(Base):
     __tablename__ = "examinations"
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    pacId: Mapped[int] = mapped_column(ForeignKey("pacients.id"))
-    diagId: Mapped[int] = mapped_column(ForeignKey("diagnostics.id"))
-   # diag: Mapped["Diagnostic"] = relationship(back_populates = "examid")
-
-    ExamType: Mapped[str]
-    ExamDate: Mapped[date]
-    ExamResults: Mapped[Optional[str]]
-
+    id = Column(Integer, primary_key=True, index=True)
+    diagId = Column(Integer, ForeignKey("diagnostics.id", ondelete="CASCADE"))
+    ExamType = Column(String)
+    ExamDate = Column(Date)
+    ExamResults = Column(String, nullable=True)
+    diagnostic = relationship("Diagnostic", back_populates="examinations")
+'''
 class Star1Data(Base):
     __tablename__ = 'star1_data'
     id = Column (Integer, primary_key = True, index = True)

@@ -4,3 +4,4 @@ uvicorn[standard]
 pydantic
 dotenv
 psycopg2-binary
+sqladmin

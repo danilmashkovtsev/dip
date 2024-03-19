@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from admin.views import DocAdmin, LPUAdmin, PacAdmin
+from admin.views import DocAdmin, LPUAdmin, PacAdmin,InsAdmin,StudyAdmin,DiagAdmin
 from models import model
 from models.database import engine
 from routers.stars import star as star_router
@@ -17,6 +17,9 @@ admin = Admin(app, engine)
 admin.add_view(DocAdmin)
 admin.add_view(LPUAdmin)
 admin.add_view(PacAdmin)
+admin.add_view(InsAdmin)
+admin.add_view(StudyAdmin)
+admin.add_view(DiagAdmin)
 
 app.include_router(
     router=star_router,

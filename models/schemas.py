@@ -1,4 +1,78 @@
+from datetime import date
+from typing import Optional, List
 from pydantic import BaseModel
+
+class PacientBase(BaseModel):
+    card: str
+    polis: str
+    snils: Optional[str] = None
+    fName: str
+    sName: str
+    tName: Optional[str] = None
+    gender: bool
+    birthDate: date
+    region: str
+    city: str
+    street: str
+    house: int
+    aps: Optional[int] = None
+    postIndex: Optional[int] = None
+    jobPlace: Optional[str] = None
+    jobProf: Optional[str] = None
+    disability: Optional[bool] = None
+    disabilityGroup: Optional[int] = None
+
+class StudyBase(BaseModel):
+    grade: str
+
+class InsurBase(BaseModel):
+    name: str
+
+class LPUBase(BaseModel):
+    ogrn: str
+    lpuName: str
+    sName: Optional[str] = None
+    address: str
+    phone: str
+    email: str
+    postIndex: Optional[int] = None
+
+class DoctorBase(BaseModel):
+    fName: str
+    sName: str
+    tName: Optional[str] = None
+    spec: str
+    regDate: date
+
+class DiagnosticBase(BaseModel):
+    ExamDate: date
+    Diagnosis: str
+    Recommendations: Optional[str] = None
+
+# Модели с отношениями
+class PacientModel(PacientBase):
+    polOrg: List[InsurBase] = []
+    studyGrade: List[StudyBase] = []
+
+class StudyModel(StudyBase):
+    pacient: PacientBase
+
+class InsurModel(InsurBase):
+    pacient: PacientBase
+
+class LPUModel(LPUBase):
+    doctors: List[DoctorBase] = []
+
+class DoctorModel(DoctorBase):
+    lpu: LPUBase
+    diagnostics: List[DiagnosticBase] = []
+
+class DiagnosticModel(DiagnosticBase):
+    doctor: DoctorBase
+    examinations: List[str] = []  # Предположим, что examinations это список строк для простоты
+
+# Обратите внимание: Pydantic не поддерживает напрямую отношения SQLAlchemy,
+# так что вы должны определить, как данные должны быть сериализованы/десериализованы между вашим API и базой данных.
 
 class Star1(BaseModel):
     P1: int = 0
