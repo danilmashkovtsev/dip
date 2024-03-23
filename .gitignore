@@ -1,0 +1,9 @@
+.idea/
+venv/
+list1.py
+list2.py
+alembic/
+alembic.ini
+config.py
+results.db
+.env
